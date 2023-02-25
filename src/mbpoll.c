@@ -829,11 +829,17 @@ main (int argc, char **argv) {
         vIoErrorExit ("Unable to set GPIO RTS pin: %d", ctx.iRtsPin);
       }
       modbus_rtu_set_custom_rts (ctx.xBus, set_custom_rts);
-      modbus_rtu_set_rts_delay (ctx.xBus, (int) t);
+      if (modbus_rtu_set_rts_delay (ctx.xBus, (int) t)) {
+        modbus_free (ctx.xBus);
+        vIoErrorExit ("Can't set RTS delay: %s", modbus_strerror (errno));
+      }
     } else {
 #endif
       if (ctx.xRtu.rtsDelay > 0) {
-        modbus_rtu_set_rts_delay (ctx.xBus, (int) (ctx.xRtu.rtsDelay * 1000.0));
+        if (modbus_rtu_set_rts_delay (ctx.xBus, (int) (ctx.xRtu.rtsDelay * 1000.0))) {
+          modbus_free (ctx.xBus);
+          vIoErrorExit ("Can't set RTS delay: %s", modbus_strerror (errno));
+        }
       }
 #ifdef MBPOLL_GPIO_RTS
     }
