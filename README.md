@@ -202,6 +202,7 @@ A complete help is available with the -h option:
                      Optional parameter for the GPIO RTS pin number
       -F [#]        RS-485 mode (/RTS on (0) when sending)
                      Optional parameter for the GPIO RTS pin number
+      -D #          /RTS delay in milliseconds (0.01 - 10000.0, disabled by default)
 
       -h            Print this help summary page
       -V            Print version and exit
