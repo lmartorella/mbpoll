@@ -86,6 +86,7 @@ typedef enum {
   eFuncDiscreteInput = 1,
   eFuncInputReg = 3,
   eFuncHoldingReg = 4,
+  eFuncPassiveMode = 0x42,
   eFuncUnknown = -1,
 } eFunctions;
 
@@ -185,7 +186,8 @@ static const int iFunctionList[] = {
   eFuncCoil,
   eFuncDiscreteInput,
   eFuncInputReg,
-  eFuncHoldingReg
+  eFuncHoldingReg,
+  eFuncPassiveMode
 };
 
 static const char sModeStr[] = "mode";
