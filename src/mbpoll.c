@@ -993,6 +993,12 @@ main (int argc, char **argv) {
                                               ctx.pvData);
                 break;
 
+              case eFuncPassiveMode: {
+                  uint8_t raw_req[6] = { ctx.piSlaveAddr[0], eFuncPassiveMode, 0x1, 0x3, 0, 0 };
+                  iRet = modbus_send_raw_request (ctx.xBus, raw_req, 6);
+                }
+                break;
+
               default: // Impossible, la valeur a été vérifiée, évite un warning de gcc
                 break;
 
