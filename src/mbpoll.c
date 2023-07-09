@@ -996,6 +996,8 @@ main (int argc, char **argv) {
               case eFuncPassiveMode: {
                   uint8_t raw_req[6] = { ctx.piSlaveAddr[0], eFuncPassiveMode, 0x1, 0x3, 0, 0 };
                   iRet = modbus_send_raw_request (ctx.xBus, raw_req, 6);
+                  uint8_t rsp[MODBUS_TCP_MAX_ADU_LENGTH];
+                  int length = modbus_receive_confirmation(ctx.xBus, rsp);
                 }
                 break;
 

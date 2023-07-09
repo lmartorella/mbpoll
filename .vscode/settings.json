@@ -1,0 +1,19 @@
+{
+    "cmake.debugConfig": {
+        // Command to read
+        "@@args": [
+            "-v", "-m", "RTU", "-a", "1", "-r", "16", "-c", "8", "-t", "4:hex", "-1", "-b", "19200", "-d", "8", "-s", "1", "-P", "none", "-0", "-R", "-D", "1.04", "/dev/ttyUSB0"
+        ],
+        // Command to write
+        "@args": [
+            "-v", "-m", "RTU", "-a", "1", "-r", "16", "-t", "4:hex", "-1", "-b", "19200", "-d", "8", "-s", "1", "-P", "none", "-0", "-R", "-D", "1.04", "/dev/ttyUSB0", "1", "2", "3", "4", "5", "6", "7", "8"
+        ],
+        // Sofar login
+        "args": [
+            "-t", "66", "-a", "1", "-v", "-c", "1", "-R", "-b", "9600", "-P", "none", "/dev/ttyUSB0"
+        ],
+    },
+    "files.associations": {
+        "stdio.h": "c"
+    }
+}
