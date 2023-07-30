@@ -1,17 +1,19 @@
 {
     "cmake.debugConfig": {
-        // Command to read
-        "@@args": [
-            "-v", "-m", "RTU", "-a", "1", "-r", "16", "-c", "8", "-t", "4:hex", "-1", "-b", "19200", "-d", "8", "-s", "1", "-P", "none", "-0", "-R", "-D", "1.04", "/dev/ttyUSB0"
-        ],
-        // Command to write
-        "@args": [
-            "-v", "-m", "RTU", "-a", "1", "-r", "16", "-t", "4:hex", "-1", "-b", "19200", "-d", "8", "-s", "1", "-P", "none", "-0", "-R", "-D", "1.04", "/dev/ttyUSB0", "1", "2", "3", "4", "5", "6", "7", "8"
-        ],
-        // Sofar login
+        // Sofar standard reg read, first 0x200
+        // -t 4 -a 1 -v -0 -c 4 -r 0x400 -c 4 -R -b 9600 -P none /dev/ttyUSB0
         "args": [
-            "-t", "66", "-a", "1", "-v", "-c", "1", "-R", "-b", "9600", "-P", "none", "/dev/ttyUSB0"
-        ],
+            "-t", "4", // Read holding registries
+            "-a", "1", // modbus address 1
+            "-v", // verbose 
+            "-0", // 0-base address
+            "-c", "4", // read 4 registries
+            "-r", "0x400", // start from 0x400 (1024, or 512/0x200 16-bit registries)
+            "-R", // RTS low
+            "-b", "9600", // 9600
+            "-P", "none", // no parity
+            "/dev/ttyUSB0"
+        ]
     },
     "files.associations": {
         "stdio.h": "c"
