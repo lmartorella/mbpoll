@@ -183,6 +183,7 @@ static const char sRtuParityStr[] = "rtu parity";
 static const char sRtuStopbitsStr[] = "rtu stop bits";
 static const char sRtuDatabitsStr[] = "rtu data bits";
 static const char sRtuBaudrateStr[] = "rtu baudrate";
+static const char sRtuRtsDelay[] = "rtu rts delay";
 static const char sTcpPortStr[] = "tcp port";
 static const char sTimeoutStr[] = "timeout";
 static const char sPollRateStr[] = "poll rate";
@@ -272,7 +273,8 @@ static xMbPollContext ctx = {
     .dbits = DEFAULT_RTU_DATABITS,
     .sbits = DEFAULT_RTU_STOPBITS,
     .parity = DEFAULT_RTU_PARITY,
-    .flow = SERIAL_FLOW_NONE
+    .flow = SERIAL_FLOW_NONE,
+    .rtsDelay = -1
   },
   .bIsVerbose = false,
   .bIsPolling = true,
@@ -313,14 +315,14 @@ static xChipIoSerial * xChipSerial;
 static const char sChipIoSlaveAddrStr[] = "chipio slave address";
 static const char sChipIoIrqPinStr[] = "chipio irq pin";
 // option -i et -n supplémentaires pour chipio
-static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:u0WRhVvwBqi:n:";
+static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:D:u0WRhVvwBqi:n:";
 
 #else /* USE_CHIPIO == 0 */
 /* constants ================================================================ */
 #ifdef MBPOLL_GPIO_RTS
-static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:u0WR::F::hVvwBq";
+static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:D:u0WR::F::hVvwBq";
 #else
-static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:u0WRFhVvwBq";
+static const char * short_options = "m:a:r:c:t:1l:o:p:b:d:s:P:D:u0WRFhVvwBq";
 #endif
 // -----------------------------------------------------------------------------
 #endif /* USE_CHIPIO == 0 */
@@ -548,6 +550,10 @@ main (int argc, char **argv) {
       case 'P':
         ctx.xRtu.parity = iGetEnum (sRtuParityStr, optarg, sParityList,
                                     iParityList, SIZEOF_ILIST (iParityList));
+        break;
+      case 'D':
+        ctx.xRtu.rtsDelay = dGetDouble (sRtuRtsDelay, optarg);
+        vCheckDoubleRange (sRtuRtsDelay, ctx.xRtu.rtsDelay, RTS_DELAY_MIN, RTS_DELAY_MAX);
         break;
 
 #ifdef USE_CHIPIO
@@ -812,14 +818,30 @@ main (int argc, char **argv) {
 
 #ifdef MBPOLL_GPIO_RTS
     if (ctx.iRtsPin >= 0) {
-      double t = 11 / (double) ctx.xRtu.baud / 2 * 1e6; // delay 1/2 car
+      double t = ctx.xRtu.rtsDelay;
+      if (t < 0) {
+        // delay 1/2 char by default
+        int pbits = ctx.xRtu.parity != SERIAL_PARITY_NONE ? 1 : 0;
+        t = (1 + ctx.xRtu.dbits + pbits + ctx.xRtu.sbits) / (double) ctx.xRtu.baud / 2 * 1e6; 
+      }
 
       if (init_custom_rts (ctx.iRtsPin, ctx.iRtuMode == MODBUS_RTU_RTS_UP) != 0) {
-
         vIoErrorExit ("Unable to set GPIO RTS pin: %d", ctx.iRtsPin);
       }
       modbus_rtu_set_custom_rts (ctx.xBus, set_custom_rts);
-      modbus_rtu_set_rts_delay (ctx.xBus, (int) t);
+      if (modbus_rtu_set_rts_delay (ctx.xBus, (int) t)) {
+        modbus_free (ctx.xBus);
+        vIoErrorExit ("Can't set RTS delay: %s", modbus_strerror (errno));
+      }
+    } else {
+#endif
+      if (ctx.xRtu.rtsDelay > 0) {
+        if (modbus_rtu_set_rts_delay (ctx.xBus, (int) (ctx.xRtu.rtsDelay * 1000.0))) {
+          modbus_free (ctx.xBus);
+          vIoErrorExit ("Can't set RTS delay: %s", modbus_strerror (errno));
+        }
+      }
+#ifdef MBPOLL_GPIO_RTS
     }
 #endif
     modbus_rtu_set_serial_mode (ctx.xBus, MODBUS_RTU_RS485);

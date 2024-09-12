@@ -78,6 +78,7 @@ typedef struct xSerialIos {
   eSerialParity parity; /**< Parité */
   eSerialStopBits sbits;/**< Bits de stop */
   eSerialFlow flow;/**< Contrôle de flux */
+  double rtsDelay; /**< Delay, in milliseconds, between the RTS enable signal and the data transmission */
   int flag; /**< Réservé pour un usage futur */
 } xSerialIos;
 
